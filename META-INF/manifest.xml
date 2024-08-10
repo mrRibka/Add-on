@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest:manifest xmlns:manifest="http://openoffice.org/2001/manifest">
+	<manifest:file-entry manifest:media-type="" manifest:full-path="main.py"/>
+</manifest:manifest>

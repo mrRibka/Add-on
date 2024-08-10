@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<oor:component-data oor:name="Addons" oor:package="org.openoffice.Office" xmlns:oor="http://openoffice.org/2001/registry">
+    <node oor:name="AddonUI">
+        <node oor:name="OfficeToolBar">
+            <node oor:name="MyToolbar" oor:op="replace">
+                <node oor:name="Label" oor:op="fuse">
+                    <prop oor:name="Label" oor:type="xs:string">
+                        <value>Database Loader</value>
+                    </prop>
+                </node>
+                <node oor:name="Event" oor:op="fuse">
+                    <prop oor:name="CommandURL" oor:type="xs:string">
+                        <value>vnd.sun.star.script:main.py$on_button_click?language=Python&amp;location=user</value>
+                    </prop>
+                </node>
+            </node>
+        </node>
+    </node>
+</oor:component-data>
