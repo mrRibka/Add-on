@@ -29,6 +29,7 @@
     <Folder Include="META-INF\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include=".gitignore" />
     <Content Include="Addons.xcu" />
     <Content Include="META-INF\manifest.xml" />
   </ItemGroup>
@@ -44,6 +45,7 @@
     </Interpreter>
   </ItemGroup>
   <ItemGroup>
+    <InterpreterReference Include="Global|VisualStudio|LibreOffice" />
     <InterpreterReference Include="Global|VisualStudio|program" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />

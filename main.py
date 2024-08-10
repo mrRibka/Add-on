@@ -2,6 +2,7 @@
 import psycopg2
 
 def connect_to_db():
+    # Connect to the PostgreSQL database
     conn = psycopg2.connect(
         dbname="mydatabase", 
         user="postgres", 
@@ -11,63 +12,37 @@ def connect_to_db():
     )
     return conn
 
-def load_table_data(conn):
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM employees')
-    rows = cursor.fetchall()
+def call_get_all_employees(cursor):
+    # Call the PostgreSQL function 'get_all_employees' using cursor.callproc
+    function_name = 'get_all_employees'
+    params = ()
+    cursor.callproc(function_name, params)
+    return cursor.fetchall()
 
+def load_table_data(conn):
+    # Get a cursor to execute SQL queries
+    cursor = conn.cursor()
+    
+    # Call the get_all_employees function in the database
+    rows = call_get_all_employees(cursor)
+
+    # Get the current Calc document
     ctx = uno.getComponentContext()
     smgr = ctx.ServiceManager
     desktop = smgr.createInstanceWithContext("com.sun.star.frame.Desktop", ctx)
     model = desktop.getCurrentComponent()
     sheet = model.Sheets.getByIndex(0)
 
+    # Populate the Calc sheet with data from the database
     for i, row in enumerate(rows):
         for j, value in enumerate(row):
             sheet.getCellByPosition(j, i).setString(str(value))
 
-def on_button_click(event=None):
-    conn = connect_to_db()
-    load_table_data(conn)
-    conn.close()
-
-def create_button():
-    ctx = uno.getComponentContext()
-    smgr = ctx.ServiceManager
-    desktop = smgr.createInstanceWithContext("com.sun.star.frame.Desktop", ctx)
-    doc = desktop.getCurrentComponent()
-    sheet = doc.Sheets[0]  
-
-    draw_page = sheet.DrawPage
-
-    if draw_page.Forms.getCount() == 0:
-        form = smgr.createInstanceWithContext("com.sun.star.form.component.Form", ctx)
-        draw_page.Forms.append(form)
-    else:
-        form = draw_page.Forms.getByIndex(0)
-
-    button_model = smgr.createInstanceWithContext("com.sun.star.form.component.CommandButton", ctx)
-    button_model.Label = "Load Data"
-    button_model.Name = "MyButton"
-    
-    button_shape = smgr.createInstanceWithContext("com.sun.star.drawing.ControlShape", ctx)
-    button_shape.Control = button_model
-    button_shape.setSize(5000, 1000)  
-    button_shape.setPosition(1000, 1000)  
-
-    draw_page.add(button_shape)
-    
-    def button_actionPerformed(event):
-        on_button_click(event)
-
-    button_model.addActionListener(uno.createUnoListener(ButtonClickListener(), "com.sun.star.awt.XActionListener"))
-
-class ButtonClickListener:
-    def actionPerformed(self, event):
-        on_button_click(event)
-
-    def disposing(self, event):
-        pass
+def main():
+    # Main function to execute the data loading process
+    conn = connect_to_db()  # Establish connection to the database
+    load_table_data(conn)   # Load data and write it to the Calc sheet
+    conn.close()            # Close the database connection
 
 if __name__ == "__main__":
-    create_button()
+    main()
