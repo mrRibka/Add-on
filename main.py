@@ -12,26 +12,31 @@ def connect_to_db():
     )
     return conn
 
-def call_get_all_employees(cursor):
-    # Call the PostgreSQL function 'get_all_employees' using cursor.callproc
-    function_name = 'get_all_employees'
-    params = ()
-    cursor.callproc(function_name, params)
-    return cursor.fetchall(), cursor.description
-
-def load_table_data(conn):
-    # Get a cursor to execute SQL queries
-    cursor = conn.cursor()
-    
-    # Call the get_all_employees function in the database and get column headers
-    rows, description = call_get_all_employees(cursor)
-
-    # Get the current Calc document
+def get_model():
     ctx = uno.getComponentContext()
     smgr = ctx.ServiceManager
     desktop = smgr.createInstanceWithContext("com.sun.star.frame.Desktop", ctx)
     model = desktop.getCurrentComponent()
-    sheet = model.CurrentController.ActiveSheet
+    return model
+
+def call_get_all_employees(conn):
+    # Call the PostgreSQL function 'get_all_employees'
+    cursor = conn.cursor()
+    function_name = 'get_all_employees'
+    cursor.callproc(function_name)
+    return cursor.fetchall(), cursor.description
+
+def call_get_all_employees_between_codes(conn, params):
+    # Call the PostgreSQL function 'get_all_employees_between_codes'
+    cursor = conn.cursor()
+    function_name = 'get_employees_between_codes'
+    
+    cursor.callproc(function_name, params)
+    return cursor.fetchall(), cursor.description
+
+def load_table_data(rows, description):
+    model = get_model()
+    sheet = model.CurrentController.ActiveSheet 
     
     oSelection = model.getCurrentSelection()
     oArea = oSelection.getRangeAddress()
@@ -39,7 +44,7 @@ def load_table_data(conn):
     currentCol = oArea.StartColumn
 
     # Set column headers from the database
-    headers = [col[0] for col in description]  # Extract column names from cursor.description
+    headers = [col[0] for col in description]
     for j, header in enumerate(headers):
         sheet.getCellByPosition(currentCol + j, currentRow).setString(header)
 
@@ -48,11 +53,23 @@ def load_table_data(conn):
         for j, value in enumerate(row):
             sheet.getCellByPosition(currentCol + j, currentRow + i + 1).setString(str(value))
 
-def main():
-    # Main function to execute the data loading process
-    conn = connect_to_db()  # Establish connection to the database
-    load_table_data(conn)
-    conn.close()            # Close the database connection
+def macros_1():
+    conn = connect_to_db()  
+    rows, description = call_get_all_employees(conn)
+    load_table_data(rows, description)
+    conn.close()
+    
+def macros_2():
+    conn = connect_to_db()  
+    model = get_model()
+    sheet = model.CurrentController.ActiveSheet
+    
+    min_code = int(sheet.getCellRangeByName("D1").getValue())
+    max_code = int(sheet.getCellRangeByName("D2").getValue())
+
+    rows, description = call_get_all_employees_between_codes(conn, (min_code, max_code))
+    load_table_data(rows, description)
+    conn.close()
     
 def clear_sheet():
     # Get the current Calc document and sheet
@@ -75,4 +92,4 @@ def clear_sheet():
 
 
 if __name__ == "__main__":
-    main()
+    macros_1()
