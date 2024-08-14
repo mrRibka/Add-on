@@ -26,6 +26,27 @@ def call_get_all_employees(conn):
     cursor.callproc(function_name)
     return cursor.fetchall(), cursor.description
 
+def call_create_employee(conn, params):
+    # Call the PostgreSQL function 'create_employee'
+    cursor = conn.cursor()
+    function_name = 'create_employee'
+    cursor.callproc(function_name, params)
+    return cursor.fetchall(), cursor.description
+
+def call_update_employee(conn, params):
+    # Call the PostgreSQL function 'update_employee'
+    cursor = conn.cursor()
+    function_name = 'update_employee'
+    cursor.callproc(function_name, params)
+    return cursor.fetchall(), cursor.description
+
+def call_delete_employee_by_id(conn, params):
+    # Call the PostgreSQL function 'delete_employee_by_id'
+    cursor = conn.cursor()
+    function_name = 'delete_employee_by_id'
+    cursor.callproc(function_name, params)
+    return cursor.fetchall(), cursor.description
+
 def call_get_employees_between_codes(conn, params):
     # Call the PostgreSQL function 'get_employees_between_codes'
     cursor = conn.cursor()
@@ -65,11 +86,9 @@ def macros_2():
     model = get_model()
     #sheet = doc.getCurrentController().getActiveSheet()
     sheet = model.CurrentController.ActiveSheet
-
     
     min_code = sheet.getCellRangeByName("D1").getString()
     max_code = sheet.getCellRangeByName("D2").getString()
-    
 
     rows, description = call_get_employees_between_codes(conn, (min_code, max_code))
     load_table_data(rows, description)
@@ -89,5 +108,3 @@ def clear_sheet():
         for col in range(last_col + 1):
             sheet.getCellByPosition(col, row).setString("")
 
-if __name__ == "__main__":
-    macros_1()
